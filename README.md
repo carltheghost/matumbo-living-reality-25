@@ -49,6 +49,25 @@ without routing through the nucleus.
     RETURN TO NUCLEUS
     HISTORY
 
+## Hierarchical expansion: 18 → 576 → more
+
+The first visual expansion keeps the same single shared nucleus and expands each
+primary direction into 32 local alternate states:
+
+    6 cardinal axes + 12 diagonal directions = 18 primary realities
+    18 × 32 = 576 first-order alternate states
+    576 × 32 = 18,432 second-order states
+    18,432 × 32 = 589,824 third-order states
+
+The alternate layer is represented as local state geometry around each primary
+direction. It does not add 576 new central nuclei and does not route those states
+through the nucleus. The renderer shows the 576 first-order states as a point
+cloud around the 18 oriented primary chambers.
+
+This is a structural/modeling implementation of the proposed lattice, not a
+claim that these alternate states have been experimentally established as
+physical universes.
+
 ## Why .25 exists
 
 The 18 primary vectors stay stable while the graph around them can grow.
