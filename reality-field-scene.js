@@ -14,6 +14,9 @@ export function buildRealityFieldScene({ THREE, parent, field, radius = 4.2 } = 
   const materials = [];
   const geometries = [];
   const nodes = new Map();
+  const referenceGroup = new THREE.Group();
+  referenceGroup.name = 'Nucleus reference spokes';
+  root.add(referenceGroup);
   const edgesGroup = new THREE.Group();
   edgesGroup.name = 'Reality connections';
   root.add(edgesGroup);
@@ -80,6 +83,32 @@ export function buildRealityFieldScene({ THREE, parent, field, radius = 4.2 } = 
     sphere.position.copy(positionFor(reality));
     root.add(sphere);
     nodes.set(reality.id, sphere);
+  }
+
+  function rebuildReferenceSpokes() {
+    while (referenceGroup.children.length) {
+      const child = referenceGroup.children.pop();
+      child.geometry?.dispose?.();
+      child.material?.dispose?.();
+    }
+
+    for (const object of nodes.values()) {
+      const geometry = new THREE.BufferGeometry().setFromPoints([
+        nucleus.position,
+        object.position,
+      ]);
+      const material = new THREE.LineBasicMaterial({
+        color: 0x294768,
+        transparent: true,
+        opacity: 0.34,
+        depthWrite: false,
+      });
+      geometries.push(geometry);
+      materials.push(material);
+      const line = new THREE.Line(geometry, material);
+      line.name = 'Nucleus reference spoke';
+      referenceGroup.add(line);
+    }
   }
 
   function rebuildEdges() {
@@ -154,6 +183,7 @@ export function buildRealityFieldScene({ THREE, parent, field, radius = 4.2 } = 
   }
 
   function update() {
+    rebuildReferenceSpokes();
     rebuildEdges();
     if (selectedId) selectReality(selectedId);
     return getSnapshot();
@@ -165,6 +195,7 @@ export function buildRealityFieldScene({ THREE, parent, field, radius = 4.2 } = 
       realityCount: nodes.size,
       activeConnectionCount: [...field.edges.values()].filter(edge => edge.active).length,
       foldCount: field.folds.size,
+      referenceSpokes: nodes.size,
       nucleusPosition: nucleus.position.toArray(),
     };
   }
@@ -184,6 +215,7 @@ export function buildRealityFieldScene({ THREE, parent, field, radius = 4.2 } = 
     }
   }
 
+  rebuildReferenceSpokes();
   rebuildEdges();
 
   return Object.freeze({
