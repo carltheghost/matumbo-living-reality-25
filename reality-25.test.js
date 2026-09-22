@@ -10,6 +10,8 @@ import {
   expansionCount,
   expansionSummary,
   expandLattice,
+  create36x36Lattice,
+  expansion36Summary,
 } from './index.js';
 
 test('lattice has one nucleus and 18 primary realities', () => {
@@ -104,4 +106,19 @@ test('expansion keeps one shared nucleus reference', () => {
   assert.equal(summary.firstOrderAlternates, 576);
   assert.equal(summary.secondOrderStates, 18432);
   assert.equal(summary.thirdOrderStates, 589824);
+});
+
+
+test('36 x 36 experiment creates 1,296 states around one nucleus', () => {
+  const lattice = create36x36Lattice();
+  assert.equal(lattice.length, 1296);
+  assert.equal(new Set(lattice.map(value => value.direction)).size, 36);
+  assert.equal(new Set(lattice.map(value => value.local)).size, 36);
+  assert.deepEqual(lattice[0].nucleus, [0, 0, 0]);
+
+  const summary = expansion36Summary();
+  assert.equal(summary.total, 1296);
+  assert.equal(summary.squareRootOf36, 6);
+  assert.equal(summary.squareOf36, 1296);
+  assert.equal(summary.sixthPowerOf36, 2176782336);
 });
