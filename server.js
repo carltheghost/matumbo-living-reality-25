@@ -17,8 +17,11 @@ const types=new Map([
 function safePath(urlPath){
   const pathname=decodeURIComponent((urlPath.split('?')[0]||'/'));
   const requested=pathname==='/'?'/index.html':pathname;
-  const full=path.normalize(path.join(__dirname,requested.startsWith('/node_modules/')?requested:'public'+requested));
-  const allowedRoot=requested.startsWith('/node_modules/')?path.join(__dirname,'node_modules'):root;
+  const runtimeFile = new Set(['/reality-lattice.js','/reality-field.js','/reality-controller.js','/reality-field-scene.js','/index.js']);
+  const isRuntimeFile = runtimeFile.has(requested);
+  const isNodeModule = requested.startsWith('/node_modules/');
+  const full=path.normalize(path.join(__dirname,isNodeModule?'node_modules':isRuntimeFile?'': 'public', requested));
+  const allowedRoot=isNodeModule?path.join(__dirname,'node_modules'):isRuntimeFile?__dirname:root;
   if(full!==allowedRoot && !full.startsWith(allowedRoot+path.sep)) return null;
   return full;
 }
