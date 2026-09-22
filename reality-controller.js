@@ -6,10 +6,15 @@ const HELP = [
   'ENTER R07',
   'RETURN TO NUCLEUS',
   'CONNECT R01 R07',
+  'DISCONNECT edge:R01->R07:1',
   'FOLD R07 R18',
   'TRACE R01 R18',
   'BRANCH R07 branch-a',
-  'SET R07 status=active pressure=0.73',
+  'EMIT R07 pulse',
+  'SET R07 status=active activity=0.9',
+  'STEP 16',
+  'STATS',
+  'SNAPSHOT',
   'HISTORY',
 ].join('\n');
 
@@ -52,14 +57,27 @@ export function createRealityController(field = new RealityField()) {
         return { ok: true, command, result: field.returnToNucleus() };
       case 'CONNECT':
         return { ok: true, command, result: field.connect(tokens[1], tokens[2]) };
+      case 'DISCONNECT':
+        return { ok: true, command, result: { disconnected: field.disconnect(tokens[1]), edgeId: tokens[1] } };
       case 'FOLD':
         return { ok: true, command, result: field.fold(tokens[1], tokens[2]) };
       case 'TRACE':
         return { ok: true, command, result: field.trace(tokens[1], tokens[2]) };
       case 'BRANCH':
         return { ok: true, command, result: field.branch(tokens[1], { id: tokens[2] }) };
+      case 'EMIT':
+        return { ok: true, command, result: field.emit(tokens[1], { type: tokens[2] || 'event' }) };
       case 'SET':
         return { ok: true, command, result: field.mutateReality(tokens[1], parseAssignments(tokens.slice(2))) };
+      case 'STEP': {
+        const amount = tokens[1] === undefined ? 1 : Number(tokens[1]);
+        if (!Number.isFinite(amount) || amount < 0) throw new Error('STEP requires a non-negative number');
+        return { ok: true, command, result: field.step(amount) };
+      }
+      case 'STATS':
+        return { ok: true, command, result: field.stats() };
+      case 'SNAPSHOT':
+        return { ok: true, command, result: field.snapshot() };
       case 'HISTORY':
         return { ok: true, command, result: [...field.history] };
       default:

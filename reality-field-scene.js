@@ -1,9 +1,8 @@
 /**
  * Reality .25 — optional Three.js projection.
  *
- * This renderer is intentionally dumb: the RealityField owns topology/state.
- * The scene only projects that state into 3D. The nucleus is rendered once;
- * reality-to-reality edges are rendered directly and never routed through it.
+ * RealityField owns the topology/state. This module only projects it into 3D.
+ * The nucleus is rendered once; reality-to-reality links are direct.
  */
 export function buildRealityFieldScene({ THREE, parent, field, radius = 4.2 } = {}) {
   if (!THREE || !parent || !field) throw new TypeError('THREE, parent and field are required');
@@ -86,10 +85,8 @@ export function buildRealityFieldScene({ THREE, parent, field, radius = 4.2 } = 
   function rebuildEdges() {
     while (edgesGroup.children.length) {
       const child = edgesGroup.children.pop();
-      if (child.geometry) child.geometry.dispose();
-      if (child.material && child.material.isMaterial) {
-        // Shared colors are not disposed here; they are owned below.
-      }
+      child.geometry?.dispose?.();
+      child.material?.dispose?.();
     }
 
     for (const edge of field.edges.values()) {
@@ -131,15 +128,29 @@ export function buildRealityFieldScene({ THREE, parent, field, radius = 4.2 } = 
     if (id !== 'NUCLEUS' && !nodes.has(id)) throw new Error('Unknown reality: ' + id);
     selectedId = id;
     for (const [realityId, object] of nodes) {
+      const state = field.getReality(realityId).localState;
       object.material = realityId === selectedId ? selectedMaterial :
-        field.getReality(realityId).address.vector[0] !== 0 &&
         field.getReality(realityId).address.vector.filter(Boolean).length === 1
           ? cardinalMaterial
           : diagonalMaterial;
-      object.scale.setScalar(realityId === selectedId ? 1.35 : 1);
+      object.scale.setScalar(realityId === selectedId ? 1.45 : 1 + Math.min(0.22, Number(state.activity || 0) * 0.22));
     }
     nucleus.scale.setScalar(selectedId === 'NUCLEUS' ? 1.35 : 1);
     return selectedId;
+  }
+
+  function animate(timeSeconds = 0) {
+    for (const [realityId, object] of nodes) {
+      const state = field.getReality(realityId).localState;
+      const activity = Math.max(0, Math.min(1, Number(state.activity || 0)));
+      const selectedBoost = realityId === selectedId ? 0.16 : 0;
+      const pulse = 0.02 * Math.sin(timeSeconds * 2.2 + realityId.charCodeAt(1));
+      object.scale.setScalar(1 + activity * 0.18 + selectedBoost + pulse);
+    }
+
+    nucleus.rotation.x = timeSeconds * 0.24;
+    nucleus.rotation.y = timeSeconds * 0.37;
+    nucleus.rotation.z = timeSeconds * 0.17;
   }
 
   function update() {
@@ -160,10 +171,15 @@ export function buildRealityFieldScene({ THREE, parent, field, radius = 4.2 } = 
 
   function destroy() {
     root.removeFromParent();
+    const disposed = new Set();
     for (const geometry of geometries) {
+      if (disposed.has(geometry)) continue;
+      disposed.add(geometry);
       try { geometry.dispose?.(); } catch {}
     }
     for (const material of materials) {
+      if (disposed.has(material)) continue;
+      disposed.add(material);
       try { material.dispose?.(); } catch {}
     }
   }
@@ -175,6 +191,7 @@ export function buildRealityFieldScene({ THREE, parent, field, radius = 4.2 } = 
     nucleus,
     nodes,
     selectReality,
+    animate,
     update,
     getSnapshot,
     destroy,
