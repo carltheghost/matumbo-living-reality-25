@@ -150,7 +150,7 @@ function select(id){
     const reality=engine.getReality(id);
     const neighbours=engine.activeNeighbors(id);
     mode.textContent=id;
-    pathLabel.textContent=reality.address.vector.join(',')+' · '+neighbours.length+' direct connections';
+    pathLabel.textContent=reality.address.vector.join(',')+' · '+neighbours.length+' direct connections · '+reality.address.direction.map(v=>v.toFixed(2)).join(',');
     selection.textContent=id+' · '+reality.address.label;
     selectionSub.textContent='activity '+Number(reality.localState.activity).toFixed(2)+' · tick '+reality.timeline.tick.toFixed(0)+' · '+reality.events.length+' events';
   }
@@ -186,10 +186,10 @@ async function start(){
       sceneModule
     ]=await Promise.all([
       import('three'),
-      import('/node_modules/three/examples/jsm/controls/OrbitControls.js'),
-      import('../reality-field.js'),
-      import('../reality-controller.js'),
-      import('../reality-field-scene.js'),
+      import('./node_modules/three/examples/jsm/controls/OrbitControls.js'),
+      import('./reality-field.js'),
+      import('./reality-controller.js'),
+      import('./reality-field-scene.js'),
     ]);
 
     three=threeModule;
