@@ -7,6 +7,9 @@ import {
   RealityField,
   createRealityController,
   validateLattice,
+  expansionCount,
+  expansionSummary,
+  expandLattice,
 } from './index.js';
 
 test('lattice has one nucleus and 18 primary realities', () => {
@@ -76,4 +79,29 @@ test('events increase local activity and remain reality-local', () => {
   assert.equal(reality.events.length, 1);
   assert.ok(reality.localState.activity > before);
   assert.equal(field.getReality('R08').events.length, 0);
+});
+
+
+test('18 primary directions expand to 576 first-order alternate states', () => {
+  const field = new RealityField();
+  const primaries = [...field.realties.values()].map(reality => ({
+    id: reality.id,
+    vector: reality.address.vector,
+  }));
+  const alternates = expandLattice(primaries);
+  assert.equal(alternates.length, 576);
+  assert.equal(new Set(alternates.map(value => value.id)).size, 576);
+  assert.equal(new Set(alternates.map(value => value.primaryId)).size, 18);
+  assert.equal(alternates.filter(value => value.primaryId === 'R01').length, 32);
+  assert.equal(expansionCount(18, 1), 576);
+  assert.equal(expansionCount(18, 2), 18432);
+});
+
+test('expansion keeps one shared nucleus reference', () => {
+  const summary = expansionSummary();
+  assert.deepEqual(summary.nucleus, [0, 0, 0]);
+  assert.equal(summary.formula, '18 × 32 = 576');
+  assert.equal(summary.firstOrderAlternates, 576);
+  assert.equal(summary.secondOrderStates, 18432);
+  assert.equal(summary.thirdOrderStates, 589824);
 });
