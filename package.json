@@ -5,7 +5,9 @@
   "type": "module",
   "description": "Experimental 18-direction Reality Lattice with a shared nucleus and non-bottleneck reality graph.",
   "scripts": {
-    "test": "node --test reality-25.test.js"
+    "test": "node --test reality-25.test.js",
+    "start": "node server.js",
+    "demo": "node server.js"
   },
   "engines": {
     "node": ">=18"
