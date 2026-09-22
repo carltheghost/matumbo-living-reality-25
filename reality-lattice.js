@@ -94,6 +94,8 @@ export function createPrimaryAddress(id, depth = 0, branch = 'root') {
   return Object.freeze({
     realityId: id,
     vector: direction.vector,
+    class: direction.class,
+    label: direction.label,
     direction: normalizeDirection(direction.vector),
     depth,
     branch,
