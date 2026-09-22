@@ -1,7 +1,7 @@
 {
   "name": "@matumbo/living-reality-25",
   "private": true,
-  "version": "0.25.0",
+  "version": "0.25.1",
   "type": "module",
   "description": "Experimental 18-direction Reality Lattice with a shared nucleus and non-bottleneck reality graph.",
   "scripts": {
