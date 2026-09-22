@@ -7,6 +7,7 @@ import {
   vectorDistance,
   vectorKey,
 } from './reality-lattice.js';
+import { expansionSummary } from './reality-expansion.js';
 
 const clone = value => value == null ? value : JSON.parse(JSON.stringify(value));
 const now = () => Date.now();
@@ -153,6 +154,7 @@ export class RealityField {
     this.folds = new Map();
     this.history = [];
     this.session = { currentRealityId: null, currentBranch: 'root' };
+    this.expansion = expansionSummary(REALITY_DIRECTIONS.length);
 
     for (const definition of REALITY_DIRECTIONS) {
       this.realties.set(
@@ -345,6 +347,7 @@ export class RealityField {
     const realities = [...this.realties.values()];
     return {
       realities: realities.length,
+      expansion: this.expansion,
       activeRealities: realities.filter(reality => reality.localState.status === 'active').length,
       branches: realities.reduce((sum, reality) => sum + reality.branches.size, 0),
       events: realities.reduce((sum, reality) => sum + reality.events.length, 0),
@@ -380,6 +383,7 @@ export class RealityField {
   snapshot() {
     return {
       schema: 'reality-25',
+      expansion: this.expansion,
       version: 2,
       nucleus: clone(this.nucleus),
       realities: [...this.realties.values()].map(reality => reality.snapshot()),

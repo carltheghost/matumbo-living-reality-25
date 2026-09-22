@@ -1,3 +1,5 @@
+import { expandLattice, FIRST_ORDER_ALTERNATE_COUNT } from './reality-expansion.js';
+
 /**
  * Reality .25 — optional Three.js projection.
  *
@@ -28,6 +30,10 @@ export function buildRealityFieldScene({ THREE, parent, field, radius = 4.2 } = 
   const orientationGroup = new THREE.Group();
   orientationGroup.name = 'Reality direction basis';
   root.add(orientationGroup);
+
+  const alternateGroup = new THREE.Group();
+  alternateGroup.name = '576 first-order alternate states';
+  root.add(alternateGroup);
 
   const nucleusMaterial = new THREE.MeshStandardMaterial({
     color: 0xf3cf73,
@@ -245,6 +251,43 @@ export function buildRealityFieldScene({ THREE, parent, field, radius = 4.2 } = 
     nodeGroups.set(reality.id, group);
   }
 
+  const alternateGeometry = new THREE.BufferGeometry();
+  const alternatePositions = [];
+  const primaryDefinitions = [...field.realties.values()].map(reality => ({
+    id: reality.id,
+    vector: reality.address.vector,
+  }));
+  const alternateStates = expandLattice(primaryDefinitions, { spread: 0.46 });
+  const primaryPositionById = new Map(
+    [...field.realties.values()].map(reality => [reality.id, positionFor(reality)]),
+  );
+  for (const alternate of alternateStates) {
+    const base = primaryPositionById.get(alternate.primaryId);
+    alternatePositions.push(
+      base.x + alternate.offset[0],
+      base.y + alternate.offset[1],
+      base.z + alternate.offset[2],
+    );
+  }
+  alternateGeometry.setAttribute(
+    'position',
+    new THREE.Float32BufferAttribute(alternatePositions, 3),
+  );
+  const alternateMaterial = new THREE.PointsMaterial({
+    color: 0x75d9ff,
+    size: 0.075,
+    transparent: true,
+    opacity: 0.68,
+    depthWrite: false,
+    sizeAttenuation: true,
+  });
+  materials.push(alternateMaterial);
+  geometries.push(alternateGeometry);
+  const alternatePoints = new THREE.Points(alternateGeometry, alternateMaterial);
+  alternatePoints.name = '576 alternate state points';
+  alternatePoints.userData.count = FIRST_ORDER_ALTERNATE_COUNT;
+  alternateGroup.add(alternatePoints);
+
   function clearGroup(group) {
     while (group.children.length) group.remove(group.children[group.children.length - 1]);
   }
@@ -347,6 +390,8 @@ export function buildRealityFieldScene({ THREE, parent, field, radius = 4.2 } = 
     nucleus.rotation.x = timeSeconds * 0.24;
     nucleus.rotation.y = timeSeconds * 0.37;
     nucleus.rotation.z = timeSeconds * 0.17;
+    alternatePoints.rotation.y = timeSeconds * 0.035;
+    alternatePoints.rotation.x = Math.sin(timeSeconds * 0.18) * 0.025;
   }
 
   function update() {
@@ -360,11 +405,14 @@ export function buildRealityFieldScene({ THREE, parent, field, radius = 4.2 } = 
     return {
       selectedId,
       realityCount: nodeGroups.size,
+      alternateStateCount: FIRST_ORDER_ALTERNATE_COUNT,
       activeConnectionCount: [...field.edges.values()].filter(edge => edge.active).length,
       foldCount: field.folds.size,
       referenceSpokes: nodeGroups.size,
       nucleusPosition: nucleus.position.toArray(),
       directionallyOriented: true,
+    sharedNucleus: true,
+    alternateStatesAreLocal: true,
     };
   }
 

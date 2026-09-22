@@ -128,6 +128,8 @@ function updateStats(){
   const s=engine.stats();
   stats.innerHTML=[
     ['18','primary'],
+    [s.expansion?.firstOrderAlternates ?? 576,'alternates'],
+    [s.expansion?.secondOrderStates ?? 18432,'next layer'],
     [s.activeConnections,'links'],
     [s.folds,'folds'],
     [s.branches,'branches'],
@@ -143,14 +145,14 @@ function select(id){
 
   if(id==='NUCLEUS'){
     mode.textContent='NUCLEUS';
-    pathLabel.textContent='shared origin · '+engine.stats().activeConnections+' live links';
+    pathLabel.textContent='shared origin · 18 primary · '+(engine.stats().expansion?.firstOrderAlternates ?? 576)+' alternates';
     selection.textContent='Central Nucleus';
     selectionSub.textContent='Reference anchor — direct graph traffic never has to pass through it.';
   }else{
     const reality=engine.getReality(id);
     const neighbours=engine.activeNeighbors(id);
     mode.textContent=id;
-    pathLabel.textContent=reality.address.vector.join(',')+' · '+neighbours.length+' direct connections · '+reality.address.direction.map(v=>v.toFixed(2)).join(',');
+    pathLabel.textContent=reality.address.vector.join(',')+' · '+neighbours.length+' direct connections · 32 local alternates · '+reality.address.direction.map(v=>v.toFixed(2)).join(',');
     selection.textContent=id+' · '+reality.address.label;
     selectionSub.textContent='activity '+Number(reality.localState.activity).toFixed(2)+' · tick '+reality.timeline.tick.toFixed(0)+' · '+reality.events.length+' events';
   }

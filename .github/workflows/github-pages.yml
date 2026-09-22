@@ -40,7 +40,7 @@ jobs:
           rm -rf site
           mkdir -p site
           cp -R public/. site/
-          cp reality-lattice.js reality-field.js reality-controller.js reality-field-scene.js site/
+          cp reality-lattice.js reality-field.js reality-controller.js reality-field-scene.js reality-expansion.js site/
           mkdir -p site/node_modules/three
           cp -R node_modules/three/. site/node_modules/three/
 
