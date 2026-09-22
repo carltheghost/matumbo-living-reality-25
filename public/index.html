@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Reality .25 — Living Reality Field</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script type="importmap">
+    {"imports":{"three":"/node_modules/three/build/three.module.js"}}
+  </script>
+</head>
+<body>
+  <div id="app">
+    <aside class="panel left">
+      <div class="eyebrow">maTumbo / REALITY .25</div>
+      <h1>Living Reality Field</h1>
+      <p class="muted">18 primary directions. One shared nucleus. No central traffic bottleneck.</p>
+
+      <div class="section">
+        <div class="label">FIELD</div>
+        <div class="stats" id="stats"></div>
+      </div>
+
+      <div class="section">
+        <div class="label">REALITIES</div>
+        <div class="reality-list" id="reality-list"></div>
+      </div>
+    </aside>
+
+    <main class="stage">
+      <canvas id="scene"></canvas>
+      <div class="overlay top">
+        <div class="badge" id="mode">NUCLEUS</div>
+        <div class="path" id="path">shared origin</div>
+      </div>
+      <div class="overlay bottom">
+        <div class="selection" id="selection">Select a reality</div>
+        <div class="sub" id="selection-sub">Click a node, then inspect or enter it.</div>
+      </div>
+    </main>
+
+    <aside class="panel right">
+      <div class="section">
+        <div class="label">CONTROL</div>
+        <form id="command-form" class="command">
+          <input id="command" autocomplete="off" spellcheck="false" placeholder="TRACE R01 R18">
+          <button>RUN</button>
+        </form>
+        <pre id="output">SHOW FIELD</pre>
+      </div>
+
+      <div class="section quick">
+        <button data-command="SHOW FIELD">FIELD</button>
+        <button data-command="RETURN TO NUCLEUS">NUCLEUS</button>
+        <button data-command="FOLD R07 R18">FOLD R07↔R18</button>
+        <button data-command="TRACE R01 R18">TRACE</button>
+        <button data-command="EMIT R07 pulse">PULSE R07</button>
+        <button data-command="STEP 8">STEP</button>
+      </div>
+    </aside>
+  </div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
