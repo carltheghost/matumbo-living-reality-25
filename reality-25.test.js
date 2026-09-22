@@ -56,3 +56,24 @@ test('controller supports conversational control commands', () => {
   controller.run('RETURN TO NUCLEUS');
   assert.equal(controller.field.session.currentRealityId, null);
 });
+
+
+test('field advances every reality without central routing', () => {
+  const field = new RealityField();
+  const before = [...field.realties.values()].map(reality => reality.timeline.tick);
+  field.step(8);
+  const after = [...field.realties.values()].map(reality => reality.timeline.tick);
+  assert.equal(after.length, 18);
+  assert.deepEqual(after, before.map(value => value + 8));
+  assert.equal(field.nucleus.vector.join(','), '0,0,0');
+});
+
+test('events increase local activity and remain reality-local', () => {
+  const field = new RealityField();
+  const before = field.getReality('R07').localState.activity;
+  field.emit('R07', { type: 'pulse', payload: { strength: 3 } });
+  const reality = field.getReality('R07');
+  assert.equal(reality.events.length, 1);
+  assert.ok(reality.localState.activity > before);
+  assert.equal(field.getReality('R08').events.length, 0);
+});
