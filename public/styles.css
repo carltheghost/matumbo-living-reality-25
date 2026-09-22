@@ -42,3 +42,5 @@ pre{white-space:pre-wrap;word-break:break-word;background:#040811;border:1px sol
 .quick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 @media(max-width:1000px){#app{grid-template-columns:230px 1fr}.right{display:none}}
 @media(max-width:700px){#app{grid-template-columns:1fr}.left{display:none}}
+
+.orientation-key{position:absolute;right:22px;bottom:22px;padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:rgba(5,8,18,.72);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);pointer-events:none}
