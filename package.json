@@ -1,0 +1,16 @@
+{
+  "name": "@matumbo/living-reality-25",
+  "private": true,
+  "version": "0.25.0",
+  "type": "module",
+  "description": "Experimental 18-direction Reality Lattice with a shared nucleus and non-bottleneck reality graph.",
+  "scripts": {
+    "test": "node --test reality-25.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "three": "0.179.1"
+  }
+}
