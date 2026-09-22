@@ -30,3 +30,11 @@ export {
   expansionCount,
   expansionSummary,
 } from './reality-expansion.js';
+export {
+  EXPERIMENT_AXIS_SIZE,
+  EXPERIMENT_TOTAL,
+  ROOT_36,
+  SIXTH_POWER_36,
+  create36x36Lattice,
+  expansion36Summary,
+} from './reality-36x36-experiment.js';
