@@ -61,3 +61,17 @@ That gives us room for secondary branches, direct reality paths, folds, event tr
     npm test
 
 GitHub Actions runs the same test suite on pushes and pull requests to main.
+
+## Live browser prototype
+
+The repository now includes a local interactive field controller.
+
+    npm install
+    npm start
+
+Then open http://localhost:4173.
+
+The prototype uses the same RealityField state model as the core API. Clicking a
+node selects it. The command bar can inspect, enter, connect, fold, emit events,
+step time, and trace paths. The 3D projection is only a renderer; it does not own
+the topology.
