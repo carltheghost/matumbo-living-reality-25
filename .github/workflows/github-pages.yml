@@ -44,11 +44,6 @@ jobs:
           mkdir -p site/node_modules/three
           cp -R node_modules/three/. site/node_modules/three/
 
-          sed -i \
-            -e "s#'../reality-field.js'#'./reality-field.js'#g" \
-            -e "s#'../reality-controller.js'#'./reality-controller.js'#g" \
-            -e "s#'../reality-field-scene.js'#'./reality-field-scene.js'#g" \
-            site/app.js
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
