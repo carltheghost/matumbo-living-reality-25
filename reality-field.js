@@ -20,9 +20,14 @@ export class RealityNode {
     if (typeof id !== 'string' || !id) throw new TypeError('RealityNode.id is required');
     this.id = id;
     this.address = Object.freeze({ ...address });
-    this.localState = localState;
-    this.timeline = timeline;
-    this.rules = rules;
+    this.localState = {
+      status: 'active',
+      activity: 0.35,
+      occupancy: 0,
+      ...clone(localState),
+    };
+    this.timeline = { phase: 0, tick: 0, ...clone(timeline) };
+    this.rules = clone(rules);
     this.entities = new Map();
     this.events = [];
     this.branches = new Map();
@@ -31,19 +36,26 @@ export class RealityNode {
   }
 
   setState(patch = {}) {
-    if (!patch || typeof patch !== 'object') throw new TypeError('state patch must be an object');
+    if (!patch || typeof patch !== 'object' || Array.isArray(patch)) {
+      throw new TypeError('state patch must be an object');
+    }
     Object.assign(this.localState, clone(patch));
     return this.snapshot();
   }
 
   addEntity(entity) {
-    if (!entity || typeof entity.id !== 'string' || !entity.id) throw new TypeError('entity.id is required');
+    if (!entity || typeof entity.id !== 'string' || !entity.id) {
+      throw new TypeError('entity.id is required');
+    }
     this.entities.set(entity.id, clone(entity));
+    this.localState.occupancy = this.entities.size;
     return entity.id;
   }
 
   removeEntity(id) {
-    return this.entities.delete(id);
+    const removed = this.entities.delete(id);
+    this.localState.occupancy = this.entities.size;
+    return removed;
   }
 
   emitEvent(event = {}) {
@@ -54,6 +66,8 @@ export class RealityNode {
       timestamp: event.timestamp || now(),
     };
     this.events.push(record);
+    if (this.events.length > 500) this.events.shift();
+    this.localState.activity = Math.min(1, Number(this.localState.activity || 0) + 0.12);
     return clone(record);
   }
 
@@ -70,6 +84,17 @@ export class RealityNode {
     };
     this.branches.set(id, branch);
     return clone(branch);
+  }
+
+  advance(delta = 1) {
+    if (!Number.isFinite(delta) || delta < 0) throw new RangeError('delta must be a finite non-negative number');
+    this.timeline.tick += delta;
+    this.timeline.phase = (this.timeline.phase + delta * 0.001) % 1;
+
+    const activity = Number(this.localState.activity || 0);
+    const decay = Math.min(0.01 * delta, 0.15);
+    this.localState.activity = Math.max(0, activity - decay);
+    return this.snapshot();
   }
 
   snapshot() {
@@ -96,7 +121,7 @@ export class RealityEdge {
     this.to = to;
     this.type = type;
     this.weight = Number.isFinite(weight) ? weight : 1;
-    this.metadata = metadata;
+    this.metadata = clone(metadata);
     this.active = true;
     this.createdAt = now();
   }
@@ -135,7 +160,11 @@ export class RealityField {
         new RealityNode({
           id: definition.id,
           address: createPrimaryAddress(definition.id),
-          localState: { status: 'active', occupancy: 0 },
+          localState: {
+            status: 'active',
+            activity: definition.class === 'cardinal' ? 0.42 : 0.58,
+            occupancy: 0,
+          },
           timeline: { phase: 0, tick: 0 },
           rules: { inheritedFromNucleus: true },
         }),
@@ -213,6 +242,13 @@ export class RealityField {
     return snapshot;
   }
 
+  emit(realityId, event = {}) {
+    const reality = this.getReality(realityId);
+    const record = reality.emitEvent(event);
+    this._record({ type: 'reality-event', realityId, event: record });
+    return record;
+  }
+
   enter(realityId, branch = 'root') {
     assertId(realityId);
     const reality = this.getReality(realityId);
@@ -221,6 +257,7 @@ export class RealityField {
     }
     this.session.currentRealityId = realityId;
     this.session.currentBranch = branch;
+    reality.localState.activity = Math.min(1, Number(reality.localState.activity || 0) + 0.08);
     this._record({ type: 'entered', realityId, branch });
     return this.inspect(realityId, branch);
   }
@@ -230,6 +267,14 @@ export class RealityField {
     this.session.currentRealityId = null;
     this.session.currentBranch = 'root';
     this._record({ type: 'returned-to-nucleus', previous });
+    return this.inspect();
+  }
+
+  step(delta = 1) {
+    for (const reality of this.realties.values()) {
+      reality.advance(delta);
+    }
+    this._record({ type: 'field-step', delta });
     return this.inspect();
   }
 
@@ -296,14 +341,26 @@ export class RealityField {
     };
   }
 
+  stats() {
+    const realities = [...this.realties.values()];
+    return {
+      realities: realities.length,
+      activeRealities: realities.filter(reality => reality.localState.status === 'active').length,
+      branches: realities.reduce((sum, reality) => sum + reality.branches.size, 0),
+      events: realities.reduce((sum, reality) => sum + reality.events.length, 0),
+      activeConnections: [...this.edges.values()].filter(edge => edge.active).length,
+      folds: this.folds.size,
+      currentRealityId: this.session.currentRealityId,
+      totalTicks: realities.reduce((sum, reality) => sum + reality.timeline.tick, 0),
+    };
+  }
+
   inspect(realityId = null, branch = 'root') {
     if (realityId == null) {
       return {
         mode: 'nucleus',
         nucleus: clone(this.nucleus),
-        realities: this.realties.size,
-        activeConnections: [...this.edges.values()].filter(edge => edge.active).length,
-        folds: this.folds.size,
+        ...this.stats(),
         session: clone(this.session),
       };
     }
@@ -323,7 +380,7 @@ export class RealityField {
   snapshot() {
     return {
       schema: 'reality-25',
-      version: 1,
+      version: 2,
       nucleus: clone(this.nucleus),
       realities: [...this.realties.values()].map(reality => reality.snapshot()),
       edges: [...this.edges.values()].map(edge => edge.snapshot()),
